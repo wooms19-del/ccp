@@ -215,10 +215,6 @@
 <div class="config-bar">
   <label>점검자</label>
   <input type="text" id="inspector" placeholder="이름 입력" value="">
-
-  <label>GAS URL</label>
-  <input type="text" id="gasUrl" placeholder="Apps Script 웹앱 URL">
-
   <button class="btn-save-config" onclick="saveConfig()">저장</button>
 </div>
 
@@ -230,7 +226,7 @@
 
 <script>
 // ── 설정 ──────────────────────────────────────────────────────
-var GAS_URL    = localStorage.getItem("gasUrl")    || "";
+var GAS_URL    = "https://script.google.com/macros/s/AKfycbxiC_p6KbgQKXVKGv_Rl9wKOGQKDvpe_lnHchCAP-ksRvIX7chGPkTd3QcCYYy4_8A-/exec";
 var INSPECTOR  = localStorage.getItem("inspector") || "";
 var POT_COUNT  = 7;
 
@@ -251,7 +247,6 @@ for (var i = 1; i <= POT_COUNT; i++) {
 
 // ── 초기화 ────────────────────────────────────────────────────
 window.onload = function() {
-  document.getElementById("gasUrl").value    = GAS_URL;
   document.getElementById("inspector").value = INSPECTOR;
   buildGrid();
   setInterval(updateClocks, 1000);
@@ -259,11 +254,9 @@ window.onload = function() {
 };
 
 function saveConfig() {
-  GAS_URL   = document.getElementById("gasUrl").value.trim();
   INSPECTOR = document.getElementById("inspector").value.trim();
-  localStorage.setItem("gasUrl",    GAS_URL);
   localStorage.setItem("inspector", INSPECTOR);
-  showToast("설정이 저장되었습니다!");
+  showToast("점검자 이름이 저장되었습니다!");
 }
 
 // ── 카드 그리드 생성 ─────────────────────────────────────────
