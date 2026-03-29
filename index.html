@@ -36,14 +36,14 @@
       flex-wrap: wrap;
     }
     .config-bar label { font-size: 13px; color: #555; font-weight: 600; }
-    .config-bar input, .config-bar select {
+    .config-bar input {
       padding: 8px 12px;
       border: 1px solid #cbd5e0;
       border-radius: 8px;
       font-size: 14px;
       background: #f7fafc;
+      width: 180px;
     }
-    .config-bar input[type="text"] { width: 320px; }
     .btn-save-config {
       padding: 8px 18px;
       background: #1a3a5c;
@@ -123,12 +123,14 @@
 
     /* 제품 정보 */
     .product-info {
-      font-size: 13px;
-      color: #4a5568;
+      font-size: 14px;
+      color: #2d3748;
       margin: 8px 0;
-      min-height: 20px;
+      min-height: 22px;
+      font-weight: 600;
     }
-    .product-info b { color: #1a3a5c; }
+    .product-info .pname { color: #1a3a5c; font-size: 15px; }
+    .product-info .pcode { color: #718096; font-size: 12px; font-weight: 400; }
 
     /* 바코드 입력 */
     .barcode-row {
@@ -192,14 +194,6 @@
     }
 
     /* 판정 결과 */
-    .result-badge {
-      display: inline-block;
-      padding: 4px 14px;
-      border-radius: 20px;
-      font-weight: 800;
-      font-size: 14px;
-      margin-top: 4px;
-    }
     .result-pass { background: #c6f6d5; color: #276749; }
     .result-fail { background: #fed7d7; color: #9b2c2c; }
   </style>
@@ -226,21 +220,23 @@
 
 <script>
 // ── 설정 ──────────────────────────────────────────────────────
-var GAS_URL    = "https://script.google.com/macros/s/AKfycbxiC_p6KbgQKXVKGv_Rl9wKOGQKDvpe_lnHchCAP-ksRvIX7chGPkTd3QcCYYy4_8A-/exec";
-var INSPECTOR  = localStorage.getItem("inspector") || "";
-var POT_COUNT  = 7;
+var GAS_URL   = "https://script.google.com/macros/s/AKfycbxiC_p6KbgQKXVKGv_Rl9wKOGQKDvpe_lnHchCAP-ksRvIX7chGPkTd3QcCYYy4_8A-/exec";
+var INSPECTOR = localStorage.getItem("inspector") || "";
+var POT_COUNT = 7;
+
+// 제품 목록 캐시 (바코드 → {name, baseMin})
+var productCache = {};
 
 // 솥별 상태 저장
 var sessions = {};
 for (var i = 1; i <= POT_COUNT; i++) {
   sessions[i] = {
-    status: "standby",   // standby / cooking / ccp
+    status: "standby",
     barcode: "",
     productName: "",
     baseMin: 55,
     startTime: null,
     ccp90Time: null,
-    startTemp: null,
     lastTemp: null
   };
 }
@@ -249,6 +245,7 @@ for (var i = 1; i <= POT_COUNT; i++) {
 window.onload = function() {
   document.getElementById("inspector").value = INSPECTOR;
   buildGrid();
+  loadProducts();  // 제품 목록 미리 로드
   setInterval(updateClocks, 1000);
   setInterval(updateTimers, 1000);
 };
@@ -257,6 +254,31 @@ function saveConfig() {
   INSPECTOR = document.getElementById("inspector").value.trim();
   localStorage.setItem("inspector", INSPECTOR);
   showToast("점검자 이름이 저장되었습니다!");
+}
+
+// ── 제품 목록 로드 ────────────────────────────────────────────
+function loadProducts() {
+  fetch(GAS_URL + "?action=getProducts&_=" + Date.now())
+    .then(function(r) { return r.json(); })
+    .then(function(list) {
+      if (!Array.isArray(list)) return;
+      list.forEach(function(p) {
+        if (p.barcode) {
+          productCache[String(p.barcode)] = {
+            name: p.name || p.barcode,
+            baseMin: p.baseMin || 55
+          };
+        }
+      });
+      console.log("제품 목록 로드 완료:", Object.keys(productCache).length + "개");
+    })
+    .catch(function() {});
+}
+
+// 바코드로 제품명 반환
+function getProductName(barcode) {
+  var p = productCache[String(barcode)];
+  return p ? p.name : null;
 }
 
 // ── 카드 그리드 생성 ─────────────────────────────────────────
@@ -294,7 +316,8 @@ function cardHTML(pot) {
     <div class="barcode-row">
       <input class="barcode-input" id="barcode-${pot}"
              placeholder="바코드 스캔 또는 입력"
-             onkeydown="if(event.key==='Enter') scanBarcode(${pot})">
+             oninput="lookupProduct(${pot})"
+             onkeydown="if(event.key==='Enter') lookupProduct(${pot})">
     </div>
 
     <button class="btn btn-start" id="btn-start-${pot}"
@@ -305,22 +328,49 @@ function cardHTML(pot) {
   </div>`;
 }
 
-// ── 바코드 스캔 ───────────────────────────────────────────────
-function scanBarcode(pot) {
+// ── 바코드 입력 시 제품명 즉시 조회 ──────────────────────────
+function lookupProduct(pot) {
   var barcode = document.getElementById("barcode-" + pot).value.trim();
-  if (!barcode) return;
-  // 제품명은 GAS에서 조회하지 않고 시작 시 서버에서 처리
-  // 여기서는 UI에만 표시
-  document.getElementById("product-" + pot).innerHTML =
-    "제품코드: <b>" + barcode + "</b>";
   sessions[pot].barcode = barcode;
+  if (!barcode) {
+    document.getElementById("product-" + pot).innerHTML = "제품: --";
+    return;
+  }
+  var name = getProductName(barcode);
+  if (name) {
+    showProductInfo(pot, barcode, name);
+  } else {
+    // 캐시에 없으면 서버에서 직접 조회
+    fetch(GAS_URL + "?action=getProducts&_=" + Date.now())
+      .then(function(r) { return r.json(); })
+      .then(function(list) {
+        if (!Array.isArray(list)) return;
+        list.forEach(function(p) {
+          if (p.barcode) productCache[String(p.barcode)] = { name: p.name || p.barcode, baseMin: p.baseMin || 55 };
+        });
+        var n = getProductName(barcode);
+        if (n) {
+          showProductInfo(pot, barcode, n);
+        } else {
+          document.getElementById("product-" + pot).innerHTML =
+            "<span class='pcode'>바코드: " + barcode + " (미등록 제품)</span>";
+        }
+      })
+      .catch(function() {});
+  }
+}
+
+function showProductInfo(pot, barcode, name) {
+  sessions[pot].productName = name;
+  document.getElementById("product-" + pot).innerHTML =
+    "<span class='pname'>📦 " + name + "</span><br>" +
+    "<span class='pcode'>바코드: " + barcode + "</span>";
 }
 
 // ── 취반 시작 ─────────────────────────────────────────────────
 function startCooking(pot) {
   var barcode = document.getElementById("barcode-" + pot).value.trim();
   if (!barcode) { showToast("바코드를 먼저 스캔해주세요!"); return; }
-  if (!GAS_URL)  { showToast("GAS URL을 먼저 설정해주세요!"); return; }
 
   var now = new Date();
   sessions[pot].status    = "cooking";
@@ -328,7 +378,6 @@ function startCooking(pot) {
   sessions[pot].startTime = now;
   sessions[pot].ccp90Time = null;
 
-  // 서버에 시작 알림
   fetch(GAS_URL + "?action=start&pot=" + encodeURIComponent(pot + "번솥")
     + "&barcode=" + encodeURIComponent(barcode)
     + "&inspector=" + encodeURIComponent(INSPECTOR))
@@ -351,8 +400,6 @@ function endCooking(pot) {
     .then(function(t) {
       var result = t.indexOf("적합") >= 0 ? "적합" : (t.indexOf("부적합") >= 0 ? "부적합" : "");
       showToast(pot + "번 취반기 종료! " + (result ? "판정: " + result : ""));
-
-      // 결과 표시
       if (result) {
         var badge = document.getElementById("badge-" + pot);
         badge.textContent = result;
@@ -362,30 +409,29 @@ function endCooking(pot) {
     .catch(function(e) { console.warn(e); });
 
   sessions[pot].status = "standby";
+  sessions[pot].productName = "";
   updateCardUI(pot);
   document.getElementById("btn-start-" + pot).disabled = false;
   document.getElementById("btn-end-"   + pot).disabled = true;
   document.getElementById("barcode-"   + pot).value    = "";
+  document.getElementById("product-"   + pot).innerHTML = "제품: --";
 }
 
 // ── 초기화 ────────────────────────────────────────────────────
 function resetPot(pot) {
   sessions[pot] = {
     status: "standby", barcode: "", productName: "",
-    baseMin: 55, startTime: null, ccp90Time: null,
-    startTemp: null, lastTemp: null
+    baseMin: 55, startTime: null, ccp90Time: null, lastTemp: null
   };
-  document.getElementById("barcode-"    + pot).value    = "";
-  document.getElementById("btn-start-"  + pot).disabled = false;
-  document.getElementById("btn-end-"    + pot).disabled = true;
+  document.getElementById("barcode-"   + pot).value    = "";
+  document.getElementById("product-"   + pot).innerHTML = "제품: --";
+  document.getElementById("btn-start-" + pot).disabled = false;
+  document.getElementById("btn-end-"   + pot).disabled = true;
   updateCardUI(pot);
 }
 
-// ── 온도 업데이트 (ESP32 → GAS → 여기서는 GAS 세션 폴링) ────
-// 실제 온도는 ESP32가 GAS로 직접 보내고,
-// 태블릿은 2초마다 세션 상태를 GAS에서 읽어와 실시간 표시
+// ── 2초마다 서버 세션 폴링 (실시간 동기화) ───────────────────
 setInterval(function() {
-  if (!GAS_URL) return;
   for (var i = 1; i <= POT_COUNT; i++) {
     pollSession(i);
   }
@@ -397,6 +443,7 @@ function pollSession(pot) {
     .then(function(data) {
       if (!data || !data["취반기번호"]) return;
 
+      // 온도 업데이트
       var temp = parseFloat(data["최근온도"]);
       if (!isNaN(temp)) {
         sessions[pot].lastTemp = temp;
@@ -405,37 +452,53 @@ function pollSession(pot) {
         el.className   = "temp-value" + (temp >= 90 ? " hot" : temp >= 70 ? " warm" : "");
       }
 
-      // 서버 취반 상태 반영 (다른 기기에서 시작한 경우)
       var serverStatus = data["상태"] || "";
+      var serverBarcode = String(data["제품코드"] || "");
+
+      // 다른 기기에서 취반 시작한 경우 → 이 화면에도 반영
       if (serverStatus === "취반중" && sessions[pot].status === "standby") {
         sessions[pot].status = "cooking";
+        sessions[pot].barcode = serverBarcode;
         if (data["취반시작"]) {
           sessions[pot].startTime = new Date(data["취반시작"].replace(" ", "T"));
         }
-        sessions[pot].barcode = data["바코드"] || "";
         var card = document.getElementById("card-" + pot);
         card.className = "card cooking";
         document.getElementById("badge-" + pot).textContent = "취반중";
         document.getElementById("badge-" + pot).className = "status-badge badge-cooking";
         document.getElementById("btn-start-" + pot).disabled = true;
         document.getElementById("btn-end-"   + pot).disabled = false;
-        if (sessions[pot].barcode) {
-          document.getElementById("product-" + pot).innerHTML = "제품코드: <b>" + sessions[pot].barcode + "</b>";
+        // 제품명 표시
+        if (serverBarcode) {
+          document.getElementById("barcode-" + pot).value = serverBarcode;
+          var pname = getProductName(serverBarcode);
+          if (pname) {
+            showProductInfo(pot, serverBarcode, pname);
+          } else {
+            document.getElementById("product-" + pot).innerHTML =
+              "<span class='pcode'>바코드: " + serverBarcode + "</span>";
+          }
         }
-      } else if (serverStatus === "대기" && sessions[pot].status === "cooking") {
+      }
+
+      // 다른 기기에서 취반 종료한 경우
+      if (serverStatus === "대기" && sessions[pot].status === "cooking") {
         sessions[pot].status = "standby";
         sessions[pot].startTime = null;
         sessions[pot].ccp90Time = null;
+        sessions[pot].productName = "";
         updateCardUI(pot);
         document.getElementById("btn-start-" + pot).disabled = false;
         document.getElementById("btn-end-"   + pot).disabled = true;
+        document.getElementById("barcode-"   + pot).value    = "";
+        document.getElementById("product-"   + pot).innerHTML = "제품: --";
       }
 
-      // 90°C 도달 시간 업데이트
+      // 90°C 도달 표시
       if (data["90°C도달"] && !sessions[pot].ccp90Time) {
         sessions[pot].ccp90Time = new Date(data["90°C도달"].replace(" ", "T"));
-        var card = document.getElementById("card-" + pot);
-        card.className = "card ccp";
+        var card2 = document.getElementById("card-" + pot);
+        card2.className = "card ccp";
         document.getElementById("badge-" + pot).textContent = "CCP 구간";
         document.getElementById("badge-" + pot).className   = "status-badge badge-ccp";
       }
@@ -449,6 +512,9 @@ function updateTimeInfo(pot, data) {
   var el = document.getElementById("timeinfo-" + pot);
   var ccp90 = data["90°C도달"] || "--";
   var start = data["취반시작"]  || "--";
+  // 시간 포맷 정리 (Z 제거, T→공백)
+  if (start !== "--") start = start.replace("T", " ").replace("Z", "").substring(0, 19);
+  if (ccp90 !== "--") ccp90 = ccp90.replace("T", " ").replace("Z", "").substring(0, 19);
   var ccpMin = "--";
   if (data["90°C도달"]) {
     var diff = Math.floor((new Date() - new Date(data["90°C도달"].replace(" ", "T"))) / 60000);
