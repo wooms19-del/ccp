@@ -390,16 +390,16 @@ function resetPot(pot) {
 
 // ── 온도 업데이트 (ESP32 → GAS → 여기서는 GAS 세션 폴링) ────
 // 실제 온도는 ESP32가 GAS로 직접 보내고,
-// 태블릿은 5초마다 세션 상태를 GAS에서 읽어와 표시
+// 태블릿은 2초마다 세션 상태를 GAS에서 읽어와 실시간 표시
 setInterval(function() {
   if (!GAS_URL) return;
   for (var i = 1; i <= POT_COUNT; i++) {
     pollSession(i);
   }
-}, 5000);
+}, 2000);
 
 function pollSession(pot) {
-  fetch(GAS_URL + "?action=getSession&pot=" + encodeURIComponent(pot + "번솥"))
+  fetch(GAS_URL + "?action=getSession&pot=" + encodeURIComponent(pot + "번솥") + "&_=" + Date.now())
     .then(function(r) { return r.json(); })
     .then(function(data) {
       if (!data || !data["취반기번호"]) return;
@@ -410,6 +410,32 @@ function pollSession(pot) {
         var el = document.getElementById("temp-" + pot);
         el.textContent = temp.toFixed(1);
         el.className   = "temp-value" + (temp >= 90 ? " hot" : temp >= 70 ? " warm" : "");
+      }
+
+      // 서버 취반 상태 반영 (다른 기기에서 시작한 경우)
+      var serverStatus = data["상태"] || "";
+      if (serverStatus === "취반중" && sessions[pot].status === "standby") {
+        sessions[pot].status = "cooking";
+        if (data["취반시작"]) {
+          sessions[pot].startTime = new Date(data["취반시작"].replace(" ", "T"));
+        }
+        sessions[pot].barcode = data["바코드"] || "";
+        var card = document.getElementById("card-" + pot);
+        card.className = "card cooking";
+        document.getElementById("badge-" + pot).textContent = "취반중";
+        document.getElementById("badge-" + pot).className = "status-badge badge-cooking";
+        document.getElementById("btn-start-" + pot).disabled = true;
+        document.getElementById("btn-end-"   + pot).disabled = false;
+        if (sessions[pot].barcode) {
+          document.getElementById("product-" + pot).innerHTML = "제품코드: <b>" + sessions[pot].barcode + "</b>";
+        }
+      } else if (serverStatus === "대기" && sessions[pot].status === "cooking") {
+        sessions[pot].status = "standby";
+        sessions[pot].startTime = null;
+        sessions[pot].ccp90Time = null;
+        updateCardUI(pot);
+        document.getElementById("btn-start-" + pot).disabled = false;
+        document.getElementById("btn-end-"   + pot).disabled = true;
       }
 
       // 90°C 도달 시간 업데이트
