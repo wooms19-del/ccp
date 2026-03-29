@@ -8,6 +8,7 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Noto Sans KR', sans-serif; background: #f0f4f8; min-height: 100vh; }
 
+    /* ── 헤더 ── */
     .header {
       background: #1a3a5c; color: white;
       padding: 14px 20px;
@@ -16,6 +17,7 @@
     .header h1 { font-size: 18px; font-weight: 700; }
     .header .clock { font-size: 16px; font-weight: 600; letter-spacing: 1px; }
 
+    /* ── 설정 바 ── */
     .config-bar {
       background: #fff; padding: 12px 20px;
       display: flex; gap: 12px; align-items: center;
@@ -31,12 +33,14 @@
       border: none; border-radius: 8px; font-size: 13px; cursor: pointer; font-weight: 600;
     }
 
+    /* ── 그리드 ── */
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
       gap: 16px; padding: 16px;
     }
 
+    /* ── 카드 ── */
     .card {
       background: white; border-radius: 16px; padding: 18px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.08);
@@ -51,10 +55,7 @@
       align-items: center; margin-bottom: 12px;
     }
     .pot-name { font-size: 20px; font-weight: 800; color: #1a3a5c; }
-    .status-badge {
-      font-size: 12px; font-weight: 700;
-      padding: 4px 10px; border-radius: 20px;
-    }
+    .status-badge { font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 20px; }
     .badge-standby { background: #edf2f7; color: #718096; }
     .badge-cooking { background: #fefcbf; color: #b7791f; }
     .badge-ccp     { background: #c6f6d5; color: #276749; }
@@ -80,49 +81,119 @@
     }
     .time-info span { font-weight: 700; color: #1a3a5c; }
 
-    /* 제품 목록 */
+    /* ── 등록 제품 태그 ── */
     .product-list {
-      background: #f7fafc; border-radius: 10px;
-      padding: 8px 12px; margin: 8px 0;
-      min-height: 36px;
+      min-height: 36px; margin: 8px 0;
+      display: flex; flex-wrap: wrap; gap: 4px; align-items: center;
     }
     .product-tag {
       display: inline-flex; align-items: center; gap: 4px;
       background: #ebf8ff; color: #2b6cb0;
-      border-radius: 20px; padding: 3px 10px;
-      font-size: 13px; font-weight: 600; margin: 2px;
+      border-radius: 20px; padding: 4px 10px;
+      font-size: 12px; font-weight: 600;
     }
+    .product-tag.h-type { background: #fff5f5; color: #c53030; }
     .product-tag .del-btn {
       cursor: pointer; color: #e53e3e;
-      font-size: 14px; font-weight: 900; line-height: 1;
-      margin-left: 2px;
+      font-size: 14px; font-weight: 900; margin-left: 2px;
     }
     .product-empty { color: #a0aec0; font-size: 13px; }
 
-    /* 바코드 입력 */
-    .barcode-row { display: flex; gap: 8px; margin: 8px 0; }
-    .barcode-input {
-      flex: 1; padding: 10px 12px;
-      border: 2px solid #cbd5e0; border-radius: 10px;
-      font-size: 14px; outline: none;
+    /* ── 바코드 스캔 버튼 ── */
+    .btn-scan {
+      width: 100%; padding: 10px; margin: 6px 0;
+      background: #edf2f7; color: #4a5568;
+      border: 2px dashed #cbd5e0; border-radius: 10px;
+      font-size: 14px; font-weight: 600; cursor: pointer;
+      transition: all 0.2s;
     }
-    .barcode-input:focus { border-color: #4299e1; }
-    .btn-add-barcode {
-      padding: 10px 14px; background: #4299e1; color: white;
-      border: none; border-radius: 10px; font-size: 18px;
-      font-weight: 900; cursor: pointer;
-    }
+    .btn-scan:hover { background: #e2e8f0; border-color: #a0aec0; }
 
+    /* ── 버튼 ── */
     .btn {
       width: 100%; padding: 12px; border: none; border-radius: 10px;
       font-size: 15px; font-weight: 700; cursor: pointer;
-      margin-top: 8px; transition: opacity 0.2s;
+      margin-top: 6px; transition: opacity 0.2s;
     }
     .btn:disabled { opacity: 0.4; cursor: not-allowed; }
     .btn-start { background: #48bb78; color: white; }
     .btn-end   { background: #e53e3e; color: white; }
     .btn-reset { background: #a0aec0; color: white; font-size: 13px; padding: 8px; }
 
+    /* ── 바코드 입력 팝업 ── */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 1000; display: none;
+      align-items: center; justify-content: center;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal {
+      background: white; border-radius: 20px;
+      padding: 24px; width: 90%; max-width: 460px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+    }
+    .modal-title {
+      font-size: 18px; font-weight: 800; color: #1a3a5c;
+      margin-bottom: 6px;
+    }
+    .modal-subtitle {
+      font-size: 13px; color: #718096; margin-bottom: 16px;
+    }
+    .modal-input-row {
+      display: flex; gap: 8px; margin-bottom: 12px;
+    }
+    .modal-input {
+      flex: 1; padding: 12px 14px;
+      border: 2px solid #4299e1; border-radius: 10px;
+      font-size: 16px; outline: none;
+    }
+    .modal-input:focus { border-color: #2b6cb0; }
+    .modal-add-btn {
+      padding: 12px 16px; background: #4299e1; color: white;
+      border: none; border-radius: 10px;
+      font-size: 20px; font-weight: 900; cursor: pointer;
+    }
+
+    /* 현재 스캔된 제품 미리보기 */
+    .scan-preview {
+      background: #f0fff4; border: 1px solid #9ae6b4;
+      border-radius: 10px; padding: 10px 14px;
+      font-size: 14px; color: #276749; font-weight: 600;
+      margin-bottom: 12px; min-height: 40px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .scan-preview.error { background: #fff5f5; border-color: #feb2b2; color: #c53030; }
+    .scan-preview.empty { background: #f7fafc; border-color: #e2e8f0; color: #a0aec0; font-weight: 400; }
+
+    /* 팝업 내 등록된 제품 목록 */
+    .modal-product-list {
+      background: #f7fafc; border-radius: 10px;
+      padding: 10px 14px; margin-bottom: 16px;
+      min-height: 50px; max-height: 180px; overflow-y: auto;
+    }
+    .modal-product-item {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 6px 0; border-bottom: 1px solid #e2e8f0; font-size: 14px;
+    }
+    .modal-product-item:last-child { border-bottom: none; }
+    .modal-product-item .pcode { color: #1a3a5c; font-weight: 700; margin-right: 8px; }
+    .modal-product-item .pname { color: #4a5568; }
+    .modal-product-item .pmin  { color: #718096; font-size: 12px; margin-left: 4px; }
+    .modal-product-item .del   { color: #e53e3e; cursor: pointer; font-size: 18px; font-weight: 900; }
+    .modal-empty { color: #a0aec0; font-size: 13px; text-align: center; padding: 10px 0; }
+
+    .modal-footer { display: flex; gap: 10px; }
+    .btn-modal-cancel {
+      flex: 1; padding: 12px; background: #edf2f7; color: #4a5568;
+      border: none; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer;
+    }
+    .btn-modal-done {
+      flex: 2; padding: 12px; background: #1a3a5c; color: white;
+      border: none; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer;
+    }
+
+    /* ── 토스트 ── */
     .toast {
       position: fixed; bottom: 30px; left: 50%;
       transform: translateX(-50%);
@@ -148,31 +219,215 @@
 </div>
 
 <div class="grid" id="grid"></div>
+
+<!-- 바코드 입력 팝업 -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <div class="modal-title" id="modal-title">제품 스캔</div>
+    <div class="modal-subtitle">바코드를 스캔하거나 제품코드를 입력하세요 (자동 추가됩니다)</div>
+
+    <div class="modal-input-row">
+      <input class="modal-input" id="modal-input"
+             placeholder="바코드 스캔 또는 직접 입력"
+             oninput="onModalInput()"
+             onkeydown="if(event.key==='Enter') addFromModal()">
+      <button class="modal-add-btn" onclick="addFromModal()">+</button>
+    </div>
+
+    <!-- 현재 입력 중인 제품 미리보기 -->
+    <div class="scan-preview empty" id="scan-preview">바코드를 스캔하면 제품명이 여기에 표시됩니다</div>
+
+    <!-- 등록된 제품 목록 -->
+    <div class="modal-product-list" id="modal-product-list">
+      <div class="modal-empty">아직 등록된 제품이 없습니다</div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-modal-cancel" onclick="closeModal()">취소</button>
+      <button class="btn-modal-done"   onclick="doneModal()">✅ 입력 완료</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
+// ── 설정 ──────────────────────────────────────────────────────
 var GAS_URL   = "https://script.google.com/macros/s/AKfycbxiC_p6KbgQKXVKGv_Rl9wKOGQKDvpe_lnHchCAP-ksRvIX7chGPkTd3QcCYYy4_8A-/exec";
 var INSPECTOR = localStorage.getItem("inspector") || "";
 var POT_COUNT = 7;
-var productCache = {};  // barcode → {name, baseMin}
+var currentModalPot = null;
 
+// ── 전체 제품 목록 (내장) ─────────────────────────────────────
+// H 타입 = 30분, 나머지 = 55분
+var PRODUCT_DB = {
+  "A01":{"name":"순수쌀미음","type":"A","baseMin":55},
+  "A02":{"name":"감자미음","type":"A","baseMin":55},
+  "A05":{"name":"청경채미음","type":"A","baseMin":55},
+  "A11":{"name":"사과미음","type":"A","baseMin":55},
+  "B01":{"name":"한우단호박당근죽","type":"B","baseMin":55},
+  "B05":{"name":"한우무죽","type":"B","baseMin":55},
+  "B07":{"name":"한우애호박죽","type":"B","baseMin":55},
+  "B15":{"name":"고구마닭죽","type":"B","baseMin":55},
+  "B21":{"name":"찹쌀배죽","type":"B","baseMin":55},
+  "B24":{"name":"사과타락죽","type":"B","baseMin":55},
+  "B42":{"name":"브로콜리양배추죽","type":"B","baseMin":55},
+  "B48":{"name":"단호박시금치죽","type":"B","baseMin":55},
+  "C01":{"name":"한우가지로메인죽","type":"C","baseMin":55},
+  "C02":{"name":"한우근대감자죽","type":"C","baseMin":55},
+  "C14":{"name":"애호박미역닭죽","type":"C","baseMin":55},
+  "C16":{"name":"배추닭살죽","type":"C","baseMin":55},
+  "C17":{"name":"대구사과근대죽","type":"C","baseMin":55},
+  "C21":{"name":"수수버섯죽","type":"C","baseMin":55},
+  "C24":{"name":"단호박고구마죽","type":"C","baseMin":55},
+  "C26":{"name":"브로콜리양송이감자죽","type":"C","baseMin":55},
+  "C28":{"name":"차조단호박시금치죽","type":"C","baseMin":55},
+  "C29":{"name":"한우오트밀배죽","type":"C","baseMin":55},
+  "C31":{"name":"한우양배추죽","type":"C","baseMin":55},
+  "C32":{"name":"닭고기시금치죽","type":"C","baseMin":55},
+  "C35":{"name":"한우연두부무죽","type":"C","baseMin":55},
+  "C36":{"name":"한우오트밀고구마죽","type":"C","baseMin":55},
+  "C38":{"name":"알밤대추닭죽","type":"C","baseMin":55},
+  "C44":{"name":"한우숙주참깨죽","type":"C","baseMin":55},
+  "C518":{"name":"한우비타민채참깨죽","type":"C","baseMin":55},
+  "C519":{"name":"한우아보카도시금치죽","type":"C","baseMin":55},
+  "C520":{"name":"한우숙주배추죽","type":"C","baseMin":55},
+  "C533":{"name":"닭고기연근애호박죽","type":"C","baseMin":55},
+  "C541":{"name":"흰살생선버섯죽","type":"C","baseMin":55},
+  "C550":{"name":"고구마당근죽","type":"C","baseMin":55},
+  "D01":{"name":"한우병아리콩죽","type":"D","baseMin":55},
+  "D06":{"name":"한우오이양배추죽","type":"D","baseMin":55},
+  "D10":{"name":"한우가지연두부죽","type":"D","baseMin":55},
+  "D11":{"name":"한우미역깨죽","type":"D","baseMin":55},
+  "D13":{"name":"한우백만송이비타민죽","type":"D","baseMin":55},
+  "D14":{"name":"한우표고당근죽","type":"D","baseMin":55},
+  "D22":{"name":"단호박시금치닭죽","type":"D","baseMin":55},
+  "D28":{"name":"병아리콩양송이버섯죽","type":"D","baseMin":55},
+  "D29":{"name":"고구마청경채죽","type":"D","baseMin":55},
+  "D36":{"name":"닭녹두버섯죽","type":"D","baseMin":55},
+  "D37":{"name":"시금치콩나물죽","type":"D","baseMin":55},
+  "D41":{"name":"대구쑥갓죽","type":"D","baseMin":55},
+  "D43":{"name":"누룽지닭죽","type":"D","baseMin":55},
+  "D50":{"name":"한우무미역죽","type":"D","baseMin":55},
+  "D55":{"name":"치즈사과단호박죽","type":"D","baseMin":55},
+  "D57":{"name":"감자오트밀죽","type":"D","baseMin":55},
+  "D59":{"name":"구기자야채닭죽","type":"D","baseMin":55},
+  "D60":{"name":"치킨두부죽","type":"D","baseMin":55},
+  "D61":{"name":"시금치치즈연어죽","type":"D","baseMin":55},
+  "D63":{"name":"흰살생선시금치죽","type":"D","baseMin":55},
+  "D66":{"name":"치즈감자닭죽","type":"D","baseMin":55},
+  "D70":{"name":"과일단호박죽","type":"D","baseMin":55},
+  "D76":{"name":"들깨버섯닭죽","type":"D","baseMin":55},
+  "D82":{"name":"모듬버섯감자죽","type":"D","baseMin":55},
+  "D89":{"name":"표고버섯미역죽","type":"D","baseMin":55},
+  "D92":{"name":"한우알배추무죽","type":"D","baseMin":55},
+  "D96":{"name":"한우케일사과죽","type":"D","baseMin":55},
+  "D111":{"name":"닭가슴살브로콜리죽","type":"D","baseMin":55},
+  "E02":{"name":"비프스튜진밥","type":"E","baseMin":55},
+  "E03":{"name":"한우버섯리조또","type":"E","baseMin":55},
+  "E12":{"name":"한우파프리카진밥","type":"E","baseMin":55},
+  "E13":{"name":"치킨카레진밥","type":"E","baseMin":55},
+  "E15":{"name":"게살진밥","type":"E","baseMin":55},
+  "E19":{"name":"대게감자진밥","type":"E","baseMin":55},
+  "E21":{"name":"대구살병아리콩진밥","type":"E","baseMin":55},
+  "E23":{"name":"고구마삼색진밥","type":"E","baseMin":55},
+  "E25":{"name":"시금치고구마닭진밥","type":"E","baseMin":55},
+  "E28":{"name":"한우잡채진밥","type":"E","baseMin":55},
+  "E30":{"name":"검은깨고구마진밥","type":"E","baseMin":55},
+  "E31":{"name":"단호박영양진밥","type":"E","baseMin":55},
+  "E34":{"name":"구기자영양닭진밥","type":"E","baseMin":55},
+  "E36":{"name":"닭가슴살녹두진밥","type":"E","baseMin":55},
+  "E37":{"name":"닭가슴살두부진밥","type":"E","baseMin":55},
+  "E41":{"name":"크림버섯리조또","type":"E","baseMin":55},
+  "E42":{"name":"한우무진밥","type":"E","baseMin":55},
+  "E44":{"name":"에그치킨리조또","type":"E","baseMin":55},
+  "E46":{"name":"한우두부미역진밥","type":"E","baseMin":55},
+  "E50":{"name":"한우사골야채진밥","type":"E","baseMin":55},
+  "E51":{"name":"돈안심콩나물진밥","type":"E","baseMin":55},
+  "E53":{"name":"단호박사과진밥","type":"E","baseMin":55},
+  "E60":{"name":"삼색야채진밥","type":"E","baseMin":55},
+  "E62":{"name":"미트토마토치즈진밥","type":"E","baseMin":55},
+  "E65":{"name":"한우오곡영양진밥","type":"E","baseMin":55},
+  "E68":{"name":"달콤과일진밥","type":"E","baseMin":55},
+  "E80":{"name":"한우숙주보양진밥","type":"E","baseMin":55},
+  "G01":{"name":"영양약밥","type":"G","baseMin":55},
+  "G02":{"name":"베리까망영양밥","type":"G","baseMin":55},
+  "G03":{"name":"한우불고기비빔밥","type":"G","baseMin":55},
+  "G04":{"name":"돈안심짜장밥","type":"G","baseMin":55},
+  "G05":{"name":"치즈새우계란밥","type":"G","baseMin":55},
+  "G06":{"name":"한우치즈야채밥","type":"G","baseMin":55},
+  "G07":{"name":"닭고기찹쌀영양밥","type":"G","baseMin":55},
+  "G08":{"name":"닭모듬버섯잡채밥","type":"G","baseMin":55},
+  "G106":{"name":"한우샤브덮밥소스","type":"G","baseMin":55},
+  "G108":{"name":"치킨데리야끼덮밥소스","type":"G","baseMin":55},
+  "G109":{"name":"야채닭갈비덮밥소스","type":"G","baseMin":55},
+  "G112":{"name":"단호박미트카레덮밥소스","type":"G","baseMin":55},
+  "G114":{"name":"돼지고기가지덮밥소스","type":"G","baseMin":55},
+  "G118":{"name":"해물짜장덮밥소스","type":"G","baseMin":55},
+  "G124":{"name":"오므라이스덮밥소스","type":"G","baseMin":55},
+  "G130":{"name":"시금치두부된장덮밥소스","type":"G","baseMin":55},
+  "G131":{"name":"한우볼로네제덮밥소스","type":"G","baseMin":55},
+  "H02":{"name":"토핑 볶은한우플러스","type":"H","baseMin":30},
+  "H03":{"name":"토핑닭가슴살","type":"H","baseMin":30},
+  "F01":{"name":"닭곰탕","type":"F","baseMin":55},
+  "F02":{"name":"설렁탕","type":"F","baseMin":55},
+  "F03":{"name":"감자애호박된장국","type":"F","baseMin":55},
+  "F06":{"name":"한우버섯불고기","type":"F","baseMin":55},
+  "F12":{"name":"배추들깨볶음","type":"F","baseMin":55},
+  "F16":{"name":"두부감자조림","type":"F","baseMin":55},
+  "F19":{"name":"닭볶음탕","type":"F","baseMin":55},
+  "F20":{"name":"들깨야채누들","type":"F","baseMin":55},
+  "F21":{"name":"야채계란국","type":"F","baseMin":55},
+  "F25":{"name":"한우단호박영양찜","type":"F","baseMin":55},
+  "F26":{"name":"순한마파두부","type":"F","baseMin":55},
+  "F29":{"name":"한우숙주전골","type":"F","baseMin":55},
+  "F30":{"name":"간장돈불고기","type":"F","baseMin":55},
+  "F38":{"name":"병아리콩조림","type":"F","baseMin":55},
+  "F39":{"name":"순두부프리타타","type":"F","baseMin":55},
+  "F40":{"name":"미역된장국","type":"F","baseMin":55},
+  "F41":{"name":"한우미역국","type":"F","baseMin":55},
+  "F48":{"name":"메추리알짜장조림","type":"F","baseMin":55},
+  "F53":{"name":"한우곰탕","type":"F","baseMin":55},
+  "F60":{"name":"대구살간장조림","type":"F","baseMin":55},
+  "F63":{"name":"치즈닭갈비","type":"F","baseMin":55},
+  "F64":{"name":"돈안심숙주볶음","type":"F","baseMin":55},
+  "F71":{"name":"한우불고기전골","type":"F","baseMin":55},
+  "F73":{"name":"두부채소김국","type":"F","baseMin":55},
+  "F100":{"name":"버섯탕수","type":"F","baseMin":55},
+  "F101":{"name":"아이두부강된장","type":"F","baseMin":55},
+  "F111":{"name":"고구마콩타락죽","type":"F","baseMin":55},
+  "F114":{"name":"투움바파스타","type":"F","baseMin":55},
+  "F119":{"name":"한우얼갈이배춧국","type":"F","baseMin":55},
+  "F125":{"name":"알새우무조림","type":"F","baseMin":55},
+  "F133":{"name":"치즈크래미콜리볶음","type":"F","baseMin":55},
+  "F137":{"name":"찹쌀닭찜","type":"F","baseMin":55},
+  "F148":{"name":"닭고기죽순탕","type":"F","baseMin":55},
+  "F155":{"name":"삼선짬뽕탕","type":"F","baseMin":55},
+  "F161":{"name":"돈안심맑은된장국","type":"F","baseMin":55},
+  "F513":{"name":"바베큐폭찹","type":"F","baseMin":55},
+  "F524":{"name":"오징어콩나물국","type":"F","baseMin":55},
+  "F535":{"name":"짜장닭볶이","type":"F","baseMin":55},
+  "F539":{"name":"닭고기배추전골","type":"F","baseMin":55},
+  "F540":{"name":"미트토마토스파게티","type":"F","baseMin":55},
+  "F544":{"name":"토마토닭볶음탕","type":"F","baseMin":55},
+  "F557":{"name":"한우양배추찜","type":"F","baseMin":55},
+  "F565":{"name":"애호박들깨볶음","type":"F","baseMin":55},
+  "F581":{"name":"맑은콩나물국","type":"F","baseMin":55},
+  "F582":{"name":"크래미계란탕","type":"F","baseMin":55}
+};
+
+// ── 솥 세션 ───────────────────────────────────────────────────
 var sessions = {};
 for (var i = 1; i <= POT_COUNT; i++) {
-  sessions[i] = {
-    status: "standby",
-    barcodes: [],      // 여러 바코드 배열
-    startTime: null,
-    ccp90Time: null,
-    lastTemp: null
-  };
+  sessions[i] = { status:"standby", barcodes:[], startTime:null, ccp90Time:null, lastTemp:null };
 }
 
 window.onload = function() {
   document.getElementById("inspector").value = INSPECTOR;
   buildGrid();
-  loadProducts();
   setInterval(updateClocks, 1000);
   setInterval(updateTimers, 1000);
+  setInterval(function() { for (var i=1;i<=POT_COUNT;i++) pollSession(i); }, 2000);
 };
 
 function saveConfig() {
@@ -181,23 +436,9 @@ function saveConfig() {
   showToast("점검자 이름이 저장되었습니다!");
 }
 
-// ── 제품 목록 로드 ────────────────────────────────────────────
-function loadProducts() {
-  fetch(GAS_URL + "?action=getProducts&_=" + Date.now())
-    .then(function(r) { return r.json(); })
-    .then(function(list) {
-      if (!Array.isArray(list)) return;
-      list.forEach(function(p) {
-        if (p.barcode) {
-          productCache[String(p.barcode)] = { name: p.name || String(p.barcode), baseMin: p.baseMin || 55 };
-        }
-      });
-    }).catch(function() {});
-}
-
-function getProductName(barcode) {
-  var p = productCache[String(barcode)];
-  return p ? p.name : null;
+function lookupProduct(code) {
+  code = String(code).trim().toUpperCase();
+  return PRODUCT_DB[code] || null;
 }
 
 // ── 카드 그리드 ───────────────────────────────────────────────
@@ -224,77 +465,121 @@ function cardHTML(pot) {
       <span>90°C 도달:</span> --<br>
       <span>CCP 경과:</span> --분
     </div>
-
-    <!-- 등록된 제품 태그 목록 -->
     <div class="product-list" id="product-list-${pot}">
       <span class="product-empty">제품을 스캔하세요</span>
     </div>
-
-    <!-- 바코드 입력 + 추가 버튼 -->
-    <div class="barcode-row">
-      <input class="barcode-input" id="barcode-${pot}"
-             placeholder="바코드 스캔 또는 입력"
-             oninput="previewProduct(${pot})"
-             onkeydown="if(event.key==='Enter') addBarcode(${pot})">
-      <button class="btn-add-barcode" onclick="addBarcode(${pot})" title="추가">+</button>
-    </div>
-
+    <button class="btn-scan" onclick="openModal(${pot})">📷 바코드 스캔 / 제품 추가</button>
     <button class="btn btn-start" id="btn-start-${pot}" onclick="startCooking(${pot})">▶ 취반 시작</button>
     <button class="btn btn-end"   id="btn-end-${pot}"   onclick="endCooking(${pot})" disabled>■ 취반 종료</button>
     <button class="btn btn-reset" onclick="resetPot(${pot})">초기화</button>
   </div>`;
 }
 
-// ── 바코드 입력 미리보기 ──────────────────────────────────────
-function previewProduct(pot) {
-  var barcode = document.getElementById("barcode-" + pot).value.trim();
-  // 입력 중에는 특별한 처리 없음 (Enter 또는 + 버튼으로 추가)
+// ── 팝업 열기/닫기 ────────────────────────────────────────────
+function openModal(pot) {
+  currentModalPot = pot;
+  document.getElementById("modal-title").textContent = pot + "번 취반기 제품 스캔";
+  document.getElementById("modal-input").value = "";
+  document.getElementById("scan-preview").textContent = "바코드를 스캔하면 제품명이 여기에 표시됩니다";
+  document.getElementById("scan-preview").className = "scan-preview empty";
+  renderModalList();
+  document.getElementById("modal-overlay").classList.add("active");
+  setTimeout(function() { document.getElementById("modal-input").focus(); }, 100);
 }
 
-// ── 바코드 추가 ───────────────────────────────────────────────
-function addBarcode(pot) {
-  var input = document.getElementById("barcode-" + pot);
-  var barcode = input.value.trim();
-  if (!barcode) return;
+function closeModal() {
+  document.getElementById("modal-overlay").classList.remove("active");
+  currentModalPot = null;
+}
+
+function doneModal() {
+  closeModal();
+}
+
+// ── 팝업 입력 미리보기 ────────────────────────────────────────
+function onModalInput() {
+  var val = document.getElementById("modal-input").value.trim().toUpperCase();
+  var preview = document.getElementById("scan-preview");
+  if (!val) {
+    preview.textContent = "바코드를 스캔하면 제품명이 여기에 표시됩니다";
+    preview.className = "scan-preview empty";
+    return;
+  }
+  var p = lookupProduct(val);
+  if (p) {
+    preview.textContent = "✅  " + val + "  /  " + p.name + "  (기준: " + p.baseMin + "분)";
+    preview.className = "scan-preview";
+  } else {
+    preview.textContent = "❌  " + val + "  —  등록되지 않은 제품코드입니다";
+    preview.className = "scan-preview error";
+  }
+}
+
+// ── 팝업에서 제품 추가 ────────────────────────────────────────
+function addFromModal() {
+  var input = document.getElementById("modal-input");
+  var code  = input.value.trim().toUpperCase();
+  if (!code || currentModalPot === null) return;
+
+  var pot = currentModalPot;
 
   // 중복 체크
-  if (sessions[pot].barcodes.indexOf(barcode) >= 0) {
+  if (sessions[pot].barcodes.indexOf(code) >= 0) {
     showToast("이미 추가된 제품이에요!");
     input.value = "";
+    onModalInput();
+    input.focus();
     return;
   }
 
-  // 제품명 조회
-  var name = getProductName(barcode);
-  if (!name) {
-    // 캐시에 없으면 서버에서 다시 로드 후 추가
-    fetch(GAS_URL + "?action=getProducts&_=" + Date.now())
-      .then(function(r) { return r.json(); })
-      .then(function(list) {
-        if (Array.isArray(list)) {
-          list.forEach(function(p) {
-            if (p.barcode) productCache[String(p.barcode)] = { name: p.name || String(p.barcode), baseMin: p.baseMin || 55 };
-          });
-        }
-        var n = getProductName(barcode) || barcode;
-        sessions[pot].barcodes.push(barcode);
-        renderProductTags(pot);
-        showToast("📦 " + n + " 추가됨!");
-      }).catch(function() {
-        sessions[pot].barcodes.push(barcode);
-        renderProductTags(pot);
-      });
-  } else {
-    sessions[pot].barcodes.push(barcode);
-    renderProductTags(pot);
-    showToast("📦 " + name + " 추가됨!");
+  var p = lookupProduct(code);
+  if (!p) {
+    showToast("등록되지 않은 제품코드예요: " + code);
+    input.value = "";
+    onModalInput();
+    input.focus();
+    return;
   }
 
+  sessions[pot].barcodes.push(code);
+  renderModalList();
+  renderProductTags(pot);
+
   input.value = "";
+  document.getElementById("scan-preview").textContent = "바코드를 스캔하면 제품명이 여기에 표시됩니다";
+  document.getElementById("scan-preview").className = "scan-preview empty";
   input.focus();
 }
 
-// ── 제품 태그 렌더링 ──────────────────────────────────────────
+// ── 팝업 목록 렌더링 ──────────────────────────────────────────
+function renderModalList() {
+  var pot = currentModalPot;
+  var el  = document.getElementById("modal-product-list");
+  if (!pot || sessions[pot].barcodes.length === 0) {
+    el.innerHTML = '<div class="modal-empty">아직 등록된 제품이 없습니다</div>';
+    return;
+  }
+  var html = "";
+  sessions[pot].barcodes.forEach(function(code, idx) {
+    var p = lookupProduct(code);
+    var name = p ? p.name : code;
+    var min  = p ? p.baseMin + "분" : "--";
+    html += '<div class="modal-product-item">' +
+      '<span><span class="pcode">' + code + '</span><span class="pname">' + name + '</span><span class="pmin">(' + min + ')</span></span>' +
+      '<span class="del" onclick="removeFromModal(' + idx + ')">×</span>' +
+      '</div>';
+  });
+  el.innerHTML = html;
+}
+
+function removeFromModal(idx) {
+  if (currentModalPot === null) return;
+  sessions[currentModalPot].barcodes.splice(idx, 1);
+  renderModalList();
+  renderProductTags(currentModalPot);
+}
+
+// ── 카드 제품 태그 렌더링 ─────────────────────────────────────
 function renderProductTags(pot) {
   var el = document.getElementById("product-list-" + pot);
   var barcodes = sessions[pot].barcodes;
@@ -303,16 +588,18 @@ function renderProductTags(pot) {
     return;
   }
   var html = "";
-  barcodes.forEach(function(bc, idx) {
-    var name = getProductName(bc) || bc;
-    html += '<span class="product-tag">📦 ' + name +
-            ' <span class="del-btn" onclick="removeBarcode(' + pot + ',' + idx + ')">×</span></span>';
+  barcodes.forEach(function(code, idx) {
+    var p = lookupProduct(code);
+    var name = p ? p.name : code;
+    var isH  = p && p.type === "H";
+    html += '<span class="product-tag' + (isH ? ' h-type' : '') + '">' +
+            code + ' ' + name +
+            '<span class="del-btn" onclick="removeTag(' + pot + ',' + idx + ')">×</span></span>';
   });
   el.innerHTML = html;
 }
 
-// ── 제품 삭제 ─────────────────────────────────────────────────
-function removeBarcode(pot, idx) {
+function removeTag(pot, idx) {
   sessions[pot].barcodes.splice(idx, 1);
   renderProductTags(pot);
 }
@@ -323,20 +610,17 @@ function startCooking(pot) {
     showToast("제품을 먼저 스캔해주세요!");
     return;
   }
-
   var now = new Date();
   sessions[pot].status    = "cooking";
   sessions[pot].startTime = now;
   sessions[pot].ccp90Time = null;
 
-  // 바코드 여러 개를 쉼표로 연결해서 전송
   var barcodeStr = sessions[pot].barcodes.join(",");
 
   fetch(GAS_URL + "?action=start&pot=" + encodeURIComponent(pot + "번솥")
     + "&barcode=" + encodeURIComponent(barcodeStr)
     + "&inspector=" + encodeURIComponent(INSPECTOR))
     .then(function(r) { return r.text(); })
-    .then(function(t) { console.log("start:", t); })
     .catch(function(e) { console.warn(e); });
 
   updateCardUI(pot);
@@ -364,15 +648,14 @@ function endCooking(pot) {
   sessions[pot].status = "standby";
   sessions[pot].barcodes = [];
   updateCardUI(pot);
+  renderProductTags(pot);
   document.getElementById("btn-start-" + pot).disabled = false;
   document.getElementById("btn-end-"   + pot).disabled = true;
-  renderProductTags(pot);
 }
 
 // ── 초기화 ────────────────────────────────────────────────────
 function resetPot(pot) {
-  sessions[pot] = { status: "standby", barcodes: [], startTime: null, ccp90Time: null, lastTemp: null };
-  document.getElementById("barcode-" + pot).value = "";
+  sessions[pot] = { status:"standby", barcodes:[], startTime:null, ccp90Time:null, lastTemp:null };
   document.getElementById("btn-start-" + pot).disabled = false;
   document.getElementById("btn-end-"   + pot).disabled = true;
   renderProductTags(pot);
@@ -380,17 +663,12 @@ function resetPot(pot) {
 }
 
 // ── 2초마다 서버 폴링 ─────────────────────────────────────────
-setInterval(function() {
-  for (var i = 1; i <= POT_COUNT; i++) pollSession(i);
-}, 2000);
-
 function pollSession(pot) {
   fetch(GAS_URL + "?action=getSession&pot=" + encodeURIComponent(pot + "번솥") + "&_=" + Date.now())
     .then(function(r) { return r.json(); })
     .then(function(data) {
       if (!data || !data["취반기번호"]) return;
 
-      // 온도 업데이트
       var temp = parseFloat(data["최근온도"]);
       if (!isNaN(temp)) {
         sessions[pot].lastTemp = temp;
@@ -399,29 +677,23 @@ function pollSession(pot) {
         el.className = "temp-value" + (temp >= 90 ? " hot" : temp >= 70 ? " warm" : "");
       }
 
-      var serverStatus = data["상태"] || "";
+      var serverStatus  = data["상태"] || "";
       var serverBarcode = String(data["제품코드"] || "");
 
-      // 다른 기기에서 취반 시작한 경우
       if (serverStatus === "취반중" && sessions[pot].status === "standby") {
         sessions[pot].status = "cooking";
-        if (data["취반시작"]) {
-          sessions[pot].startTime = new Date(data["취반시작"].replace(" ", "T"));
-        }
-        // 바코드 여러 개 파싱 (쉼표 구분)
+        if (data["취반시작"]) sessions[pot].startTime = new Date(data["취반시작"].replace(" ","T"));
         if (serverBarcode) {
-          sessions[pot].barcodes = serverBarcode.split(",").map(function(b) { return b.trim(); });
+          sessions[pot].barcodes = serverBarcode.split(",").map(function(b){return b.trim().toUpperCase();});
           renderProductTags(pot);
         }
-        var card = document.getElementById("card-" + pot);
-        card.className = "card cooking";
+        document.getElementById("card-" + pot).className = "card cooking";
         document.getElementById("badge-" + pot).textContent = "취반중";
         document.getElementById("badge-" + pot).className = "status-badge badge-cooking";
         document.getElementById("btn-start-" + pot).disabled = true;
         document.getElementById("btn-end-"   + pot).disabled = false;
       }
 
-      // 다른 기기에서 취반 종료한 경우
       if (serverStatus === "대기" && sessions[pot].status === "cooking") {
         sessions[pot].status = "standby";
         sessions[pot].startTime = null;
@@ -433,27 +705,26 @@ function pollSession(pot) {
         document.getElementById("btn-end-"   + pot).disabled = true;
       }
 
-      // 90°C 도달
       if (data["90°C도달"] && !sessions[pot].ccp90Time) {
-        sessions[pot].ccp90Time = new Date(data["90°C도달"].replace(" ", "T"));
+        sessions[pot].ccp90Time = new Date(data["90°C도달"].replace(" ","T"));
         document.getElementById("card-" + pot).className = "card ccp";
         document.getElementById("badge-" + pot).textContent = "CCP 구간";
         document.getElementById("badge-" + pot).className = "status-badge badge-ccp";
       }
 
       updateTimeInfo(pot, data);
-    }).catch(function() {});
+    }).catch(function(){});
 }
 
 function updateTimeInfo(pot, data) {
-  var el = document.getElementById("timeinfo-" + pot);
+  var el    = document.getElementById("timeinfo-" + pot);
   var start = data["취반시작"] || "--";
   var ccp90 = data["90°C도달"] || "--";
-  if (start !== "--") start = start.replace("T", " ").replace("Z", "").substring(0, 19);
-  if (ccp90 !== "--") ccp90 = ccp90.replace("T", " ").replace("Z", "").substring(0, 19);
+  if (start !== "--") start = start.replace("T"," ").replace("Z","").substring(0,19);
+  if (ccp90 !== "--") ccp90 = ccp90.replace("T"," ").replace("Z","").substring(0,19);
   var ccpMin = "--";
   if (data["90°C도달"]) {
-    var diff = Math.floor((new Date() - new Date(data["90°C도달"].replace(" ", "T"))) / 60000);
+    var diff = Math.floor((new Date() - new Date(data["90°C도달"].replace(" ","T"))) / 60000);
     ccpMin = diff + "분";
   }
   el.innerHTML =
@@ -464,7 +735,7 @@ function updateTimeInfo(pot, data) {
 
 function updateCardUI(pot) {
   var s = sessions[pot];
-  var card = document.getElementById("card-" + pot);
+  var card  = document.getElementById("card-" + pot);
   var badge = document.getElementById("badge-" + pot);
   if (s.status === "standby") {
     card.className = "card standby";
@@ -487,11 +758,11 @@ function updateTimers() {
     var s = sessions[i];
     if (s.status !== "standby" && s.startTime) {
       var diff = Math.floor((now - s.startTime) / 1000);
-      var h = String(Math.floor(diff / 3600)).padStart(2, "0");
-      var m = String(Math.floor((diff % 3600) / 60)).padStart(2, "0");
-      var sec = String(diff % 60).padStart(2, "0");
+      var h = String(Math.floor(diff/3600)).padStart(2,"0");
+      var m = String(Math.floor((diff%3600)/60)).padStart(2,"0");
+      var sec = String(diff%60).padStart(2,"0");
       var el = document.getElementById("timer-" + i);
-      el.textContent = h + ":" + m + ":" + sec;
+      el.textContent = h+":"+m+":"+sec;
       if (s.ccp90Time) el.className = "timer ccp-active";
     }
   }
@@ -500,8 +771,8 @@ function updateTimers() {
 function updateClocks() {
   var now = new Date();
   document.getElementById("clock").textContent =
-    String(now.getHours()).padStart(2,"0") + ":" +
-    String(now.getMinutes()).padStart(2,"0") + ":" +
+    String(now.getHours()).padStart(2,"0")+":"+
+    String(now.getMinutes()).padStart(2,"0")+":"+
     String(now.getSeconds()).padStart(2,"0");
 }
 
@@ -509,7 +780,7 @@ function showToast(msg) {
   var t = document.getElementById("toast");
   t.textContent = msg;
   t.style.display = "block";
-  setTimeout(function() { t.style.display = "none"; }, 3000);
+  setTimeout(function(){ t.style.display="none"; }, 3000);
 }
 </script>
 </body>
