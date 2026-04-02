@@ -254,6 +254,7 @@ var POT_COUNT = 7;
 var PRODUCT_DB = {};
 var currentModalPot = null;
 var CCP_TEMP = 90;
+var pendingWorkType = "처음생산";
 
 var sessions = {};
 
@@ -306,6 +307,7 @@ function buildSessionObjects() {
     sessions[i] = {
       status: "standby",
       barcodes: [],
+      workTypes: {},
       startTime: null,
       ccp90Time: null,
       lastTemp: null
@@ -401,7 +403,7 @@ function onModalInput() {
   }
 }
 
-function addFromModal() {
+async function addFromModal() {
   var input = document.getElementById("modal-input");
   var code = input.value.trim().toUpperCase();
 
@@ -426,7 +428,45 @@ function addFromModal() {
     return;
   }
 
+  try {
+    var res = await fetch(
+      GAS_URL + "?action=checkTodayProduct&code=" + encodeURIComponent(code) + "&_=" + Date.now()
+    );
+    var check = await res.json();
+
+    if (check.exists) {
+      var answer = prompt(
+        "오늘 이미 생산된 제품입니다.\n\n" +
+        "1 입력 = 재작업\n" +
+        "2 입력 = 추가작업\n" +
+        "취소 또는 다른 값 = 등록 취소"
+      );
+
+      if (answer === "1") {
+        pendingWorkType = "재작업";
+      } else if (answer === "2") {
+        pendingWorkType = "추가작업";
+      } else {
+        showToast("제품 추가 취소");
+        input.value = "";
+        onModalInput();
+        input.focus();
+        return;
+      }
+    } else {
+      pendingWorkType = "처음생산";
+    }
+  } catch (err) {
+    console.error(err);
+    showToast("중복 확인 실패");
+    return;
+  }
+
   sessions[pot].barcodes.push(code);
+
+  if (!sessions[pot].workTypes) sessions[pot].workTypes = {};
+  sessions[pot].workTypes[code] = pendingWorkType;
+
   renderModalList();
   renderProductTags(pot);
 
@@ -434,6 +474,8 @@ function addFromModal() {
   document.getElementById("scan-preview").textContent = "바코드를 스캔하면 제품명이 여기에 표시됩니다";
   document.getElementById("scan-preview").className = "scan-preview empty";
   input.focus();
+
+  showToast(code + " / " + pendingWorkType + " 등록 완료");
 }
 
 function renderModalList() {
@@ -450,8 +492,10 @@ function renderModalList() {
     var p = lookupProduct(code);
     var name = p ? p.name : code;
     var min = p ? p.baseMin + "분" : "--";
+    var workType = (sessions[pot].workTypes && sessions[pot].workTypes[code]) ? sessions[pot].workTypes[code] : "처음생산";
+
     html += '<div class="modal-product-item">' +
-      '<span><span class="pcode">' + code + '</span><span class="pname">' + name + '</span><span class="pmin">(' + min + ')</span></span>' +
+      '<span><span class="pcode">' + code + '</span><span class="pname">' + name + '</span><span class="pmin">(' + min + ', ' + workType + ')</span></span>' +
       '<span class="del" onclick="removeFromModal(' + idx + ')">×</span>' +
       '</div>';
   });
@@ -461,7 +505,14 @@ function renderModalList() {
 
 function removeFromModal(idx) {
   if (currentModalPot === null) return;
+
+  var code = sessions[currentModalPot].barcodes[idx];
   sessions[currentModalPot].barcodes.splice(idx, 1);
+
+  if (sessions[currentModalPot].workTypes && code) {
+    delete sessions[currentModalPot].workTypes[code];
+  }
+
   renderModalList();
   renderProductTags(currentModalPot);
 }
@@ -480,15 +531,23 @@ function renderProductTags(pot) {
     var p = lookupProduct(code);
     var name = p ? p.name : code;
     var isH = p && p.type === "H";
+    var workType = (sessions[pot].workTypes && sessions[pot].workTypes[code]) ? sessions[pot].workTypes[code] : "처음생산";
+
     html += '<span class="product-tag' + (isH ? ' h-type' : '') + '">' +
-            code + ' ' + name +
+            code + ' ' + name + ' [' + workType + ']' +
             '<span class="del-btn" onclick="removeTag(' + pot + ',' + idx + ')">×</span></span>';
   });
   el.innerHTML = html;
 }
 
 function removeTag(pot, idx) {
+  var code = sessions[pot].barcodes[idx];
   sessions[pot].barcodes.splice(idx, 1);
+
+  if (sessions[pot].workTypes && code) {
+    delete sessions[pot].workTypes[code];
+  }
+
   renderProductTags(pot);
 }
 
@@ -504,12 +563,19 @@ function startCooking(pot) {
   sessions[pot].ccp90Time = null;
 
   var barcodeStr = sessions[pot].barcodes.join(",");
+  var workType = "처음생산";
+
+  if (sessions[pot].barcodes.length === 1) {
+    var onlyCode = sessions[pot].barcodes[0];
+    workType = (sessions[pot].workTypes && sessions[pot].workTypes[onlyCode]) ? sessions[pot].workTypes[onlyCode] : "처음생산";
+  }
 
   fetch(
     GAS_URL + "?action=start" +
     "&pot=" + encodeURIComponent(pot + "번솥") +
     "&barcode=" + encodeURIComponent(barcodeStr) +
-    "&inspector=" + encodeURIComponent(INSPECTOR)
+    "&inspector=" + encodeURIComponent(INSPECTOR) +
+    "&workType=" + encodeURIComponent(workType)
   )
   .then(function(r) { return r.text(); })
   .catch(function(e) { console.warn(e); });
@@ -541,6 +607,7 @@ function endCooking(pot) {
 
   sessions[pot].status = "standby";
   sessions[pot].barcodes = [];
+  sessions[pot].workTypes = {};
   sessions[pot].startTime = null;
   sessions[pot].ccp90Time = null;
 
@@ -555,6 +622,7 @@ function resetPot(pot) {
   sessions[pot] = {
     status: "standby",
     barcodes: [],
+    workTypes: {},
     startTime: null,
     ccp90Time: null,
     lastTemp: null
@@ -589,6 +657,7 @@ function pollSession(pot) {
 
     var serverStatus = data["상태"] || "";
     var serverBarcode = String(data["제품코드"] || "");
+    var serverWorkType = String(data["작업구분"] || "");
 
     if (serverStatus === "취반중" && sessions[pot].status === "standby") {
       sessions[pot].status = "cooking";
@@ -603,6 +672,12 @@ function pollSession(pot) {
         }).filter(function(b) {
           return b !== "";
         });
+
+        sessions[pot].workTypes = {};
+        sessions[pot].barcodes.forEach(function(code) {
+          sessions[pot].workTypes[code] = serverWorkType || "처음생산";
+        });
+
         renderProductTags(pot);
       }
 
@@ -618,6 +693,7 @@ function pollSession(pot) {
       sessions[pot].startTime = null;
       sessions[pot].ccp90Time = null;
       sessions[pot].barcodes = [];
+      sessions[pot].workTypes = {};
       updateCardUI(pot);
       renderProductTags(pot);
       document.getElementById("btn-start-" + pot).disabled = false;
