@@ -480,6 +480,25 @@
         .replace(/'/g, "&#039;");
     }
 
+    function parseWorkTypeMapClient(str) {
+      const result = {};
+      if (!str) return result;
+
+      str.split(",").forEach(pair => {
+        const idx = pair.indexOf(":");
+        if (idx === -1) return;
+
+        const code = pair.substring(0, idx).trim().toUpperCase();
+        const workType = pair.substring(idx + 1).trim();
+
+        if (code) {
+          result[code] = workType || "처음생산";
+        }
+      });
+
+      return result;
+    }
+
     async function loadProducts() {
       try {
         const res = await fetch(`${GAS_URL}?action=getProducts&_=${Date.now()}`);
@@ -640,7 +659,9 @@
 
       const inspector = (document.getElementById("inspectorName").value || "").trim();
       const barcodeList = state.products.map(p => p.code).join(",");
-      const workType = state.products[0].workType || "처음생산";
+      const workTypeMap = state.products
+        .map(p => `${p.code}:${p.workType || "처음생산"}`)
+        .join(",");
 
       try {
         const url =
@@ -648,7 +669,7 @@
           `&pot=${encodeURIComponent(state.potLabel)}` +
           `&barcode=${encodeURIComponent(barcodeList)}` +
           `&inspector=${encodeURIComponent(inspector)}` +
-          `&workType=${encodeURIComponent(workType)}` +
+          `&workTypeMap=${encodeURIComponent(workTypeMap)}` +
           `&_=${Date.now()}`;
 
         const res = await fetch(url);
@@ -745,12 +766,14 @@
               .map(v => v.trim())
               .filter(Boolean);
 
+            const workTypeMap = parseWorkTypeMapClient(String(data["작업구분"] || ""));
+
             potStates[i].products = codes.map(code => {
               const found = findProductByCode(code);
               return {
                 code: code,
                 name: found ? found.name : code,
-                workType: data["작업구분"] || "처음생산"
+                workType: workTypeMap[String(code).toUpperCase()] || "처음생산"
               };
             });
           } else if (potStates[i].status === "취반중") {
