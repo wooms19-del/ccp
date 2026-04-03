@@ -2,250 +2,377 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>순수본 CCP 자동화 시스템</title>
   <style>
-    * { box-sizing: border-box; }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     body {
       margin: 0;
       font-family: Arial, "Malgun Gothic", sans-serif;
-      background: #eef2f7;
-      color: #16345d;
+      background: #eef3f8;
+      color: #173b69;
     }
+
     .topbar {
       background: #173b69;
       color: #fff;
-      padding: 18px 24px;
-      font-size: 18px;
-      font-weight: 700;
+      padding: 14px 16px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.12);
     }
-    .toolbar {
+
+    .top-row {
       display: flex;
+      gap: 10px;
       align-items: center;
-      gap: 12px;
-      padding: 14px 24px;
-      background: #f7f8fb;
-      border-bottom: 1px solid #d8dee8;
       flex-wrap: wrap;
     }
-    .toolbar label {
-      font-weight: 700;
-      color: #333;
+
+    .brand {
+      font-size: 20px;
+      font-weight: 800;
+      flex: 1 1 auto;
     }
-    .toolbar input {
-      height: 36px;
-      padding: 0 12px;
-      border: 1px solid #c7d0db;
-      border-radius: 8px;
-      min-width: 180px;
+
+    .inspector-wrap {
+      display: flex;
+      gap: 8px;
+      width: 100%;
+      margin-top: 10px;
     }
-    .toolbar button {
-      height: 36px;
-      padding: 0 18px;
+
+    .inspector-wrap input {
+      flex: 1;
+      height: 46px;
       border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: 700;
-      background: #173b69;
+      border-radius: 12px;
+      padding: 0 14px;
+      font-size: 16px;
+    }
+
+    .inspector-wrap button {
+      width: 90px;
+      height: 46px;
+      border: none;
+      border-radius: 12px;
+      background: #4f86d9;
       color: #fff;
+      font-size: 16px;
+      font-weight: 800;
+    }
+
+    .selected-pot-bar {
+      margin-top: 10px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-size: 16px;
+      font-weight: 700;
     }
 
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-      gap: 18px;
-      padding: 18px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      padding: 12px 12px 170px;
     }
 
     .pot-card {
       background: #fff;
-      border-radius: 20px;
-      padding: 18px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-      border-left: 5px solid #b8c7db;
-      min-height: 520px;
-      display: flex;
-      flex-direction: column;
+      border-radius: 18px;
+      padding: 14px;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+      border: 3px solid transparent;
+      min-height: 180px;
+    }
+
+    .pot-card.selected {
+      border-color: #2f7de1;
+      box-shadow: 0 8px 18px rgba(47,125,225,0.2);
     }
 
     .pot-card.cooking {
-      border-left-color: #f0a340;
+      border-left: 8px solid #f3a13b;
     }
 
-    .pot-header {
+    .pot-head {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 18px;
+      margin-bottom: 8px;
     }
 
     .pot-title {
       font-size: 22px;
       font-weight: 800;
-      color: #173b69;
     }
 
     .badge {
-      padding: 6px 12px;
-      border-radius: 999px;
       font-size: 13px;
-      font-weight: 700;
+      font-weight: 800;
+      padding: 6px 10px;
+      border-radius: 999px;
     }
 
     .badge.wait {
-      background: #edf2f8;
-      color: #6e7f97;
+      background: #edf2f7;
+      color: #71829c;
     }
 
     .badge.run {
-      background: #f7e79b;
-      color: #9b6b00;
+      background: #fde8bf;
+      color: #9c6400;
     }
 
-    .temp-box {
-      text-align: center;
-      margin-bottom: 8px;
-      font-size: 44px;
+    .temp {
+      font-size: 34px;
       font-weight: 800;
-      letter-spacing: 2px;
-      color: #16345d;
+      margin-top: 6px;
+      margin-bottom: 4px;
     }
 
-    .temp-box span {
-      font-size: 28px;
-      color: #5f6f84;
-    }
-
-    .timer-box {
-      text-align: center;
-      font-size: 24px;
+    .timer {
+      font-size: 18px;
       font-weight: 800;
-      margin-bottom: 16px;
-      color: #16345d;
+      margin-bottom: 10px;
+      color: #38577f;
     }
 
-    .info-box {
-      background: #f3f6fb;
-      border-radius: 14px;
-      padding: 14px;
-      margin-bottom: 14px;
-      line-height: 1.9;
-      font-weight: 700;
-      color: #16345d;
-      min-height: 122px;
+    .mini-info {
+      font-size: 14px;
+      line-height: 1.7;
+      color: #476587;
+      margin-bottom: 10px;
     }
 
-    .chips {
+    .product-list {
       display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      min-height: 42px;
-      margin-bottom: 14px;
-    }
-
-    .chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: #e8f1fb;
-      color: #245ca6;
-      border-radius: 999px;
-      padding: 8px 12px;
+      flex-direction: column;
+      gap: 6px;
       font-size: 14px;
       font-weight: 700;
+      color: #21486f;
     }
 
-    .chip button {
-      border: none;
-      background: transparent;
-      color: #ef4a4a;
-      cursor: pointer;
-      font-size: 18px;
-      line-height: 1;
-      padding: 0;
+    .product-item {
+      background: #eef5fc;
+      border-radius: 10px;
+      padding: 8px 10px;
+      word-break: break-all;
     }
 
-    .scan-wrap {
-      margin-top: 6px;
-      margin-bottom: 14px;
+    .bottom-panel {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: #ffffff;
+      border-top: 1px solid #d8e0ea;
+      box-shadow: 0 -4px 16px rgba(0,0,0,0.08);
+      padding: 12px;
+      z-index: 60;
     }
 
-    .scan-btn, .action-btn, .reset-btn {
-      width: 100%;
-      border: none;
-      border-radius: 12px;
-      font-size: 16px;
+    .scan-label {
+      font-size: 14px;
       font-weight: 800;
+      margin-bottom: 6px;
+      color: #4b6788;
+    }
+
+    .scan-input {
+      width: 100%;
+      height: 52px;
+      border: 2px solid #cdd8e6;
+      border-radius: 14px;
+      padding: 0 14px;
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .scan-status {
+      min-height: 24px;
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      color: #3f5f84;
+    }
+
+    .action-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    .action-btn {
+      flex: 1;
+      height: 52px;
+      border: none;
+      border-radius: 14px;
+      font-size: 18px;
+      font-weight: 800;
+      color: #fff;
       cursor: pointer;
-      height: 46px;
     }
 
-    .scan-btn {
-      background: #f5f7fa;
-      border: 2px dashed #cdd8e6;
-      color: #4d5d73;
-      margin-bottom: 10px;
+    .start-btn {
+      background: #41b96f;
     }
 
-    .action-btn.start {
-      background: #52c27a;
-      color: white;
-      margin-bottom: 10px;
+    .end-btn {
+      background: #e34a4a;
     }
 
-    .action-btn.end {
-      background: #ec4040;
-      color: white;
-      margin-bottom: 10px;
-    }
-
-    .reset-btn {
-      background: #8ea0b7;
-      color: white;
-    }
-
-    .action-btn:disabled,
-    .reset-btn:disabled,
-    .scan-btn:disabled {
+    .action-btn:disabled {
       opacity: 0.45;
       cursor: not-allowed;
     }
 
-    .bottom-note {
-      margin-top: auto;
-      font-size: 12px;
-      color: #7d8da4;
-      padding-top: 12px;
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.4);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      z-index: 100;
+    }
+
+    .overlay.show {
+      display: flex;
+    }
+
+    .modal {
+      width: 100%;
+      max-width: 430px;
+      background: #fff;
+      border-radius: 20px;
+      padding: 18px;
+      box-shadow: 0 18px 30px rgba(0,0,0,0.2);
+    }
+
+    .modal-title {
+      font-size: 22px;
+      font-weight: 900;
+      margin-bottom: 12px;
+      color: #173b69;
+    }
+
+    .modal-body {
+      font-size: 15px;
+      line-height: 1.7;
+      color: #355779;
+      white-space: pre-line;
+      margin-bottom: 16px;
+    }
+
+    .modal-btns {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .modal-btn {
+      width: 100%;
+      height: 50px;
+      border: none;
+      border-radius: 14px;
+      font-size: 17px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .btn-rework {
+      background: #2f7de1;
+      color: #fff;
+    }
+
+    .btn-additional {
+      background: #f2a23a;
+      color: #fff;
+    }
+
+    .btn-cancel {
+      background: #dbe4ef;
+      color: #476587;
+    }
+
+    @media (max-width: 480px) {
+      .grid {
+        grid-template-columns: 1fr 1fr;
+      }
+      .pot-title {
+        font-size: 20px;
+      }
+      .temp {
+        font-size: 28px;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="topbar">🍚 순수본 CCP 자동화 시스템</div>
-
-  <div class="toolbar">
-    <label for="inspectorName">점검자</label>
-    <input id="inspectorName" type="text" placeholder="이름 입력" />
-    <button onclick="saveInspector()">저장</button>
+  <div class="topbar">
+    <div class="top-row">
+      <div class="brand">🍚 순수본 CCP 자동화 시스템</div>
+    </div>
+    <div class="inspector-wrap">
+      <input id="inspectorName" type="text" placeholder="점검자 이름 입력" />
+      <button onclick="saveInspector()">저장</button>
+    </div>
+    <div class="selected-pot-bar" id="selectedPotBar">현재 선택: 없음</div>
   </div>
 
-  <div id="potGrid" class="grid"></div>
+  <div class="grid" id="potGrid"></div>
+
+  <div class="bottom-panel">
+    <div class="scan-label">바코드 스캔 입력</div>
+    <input
+      id="barcodeInput"
+      class="scan-input"
+      type="text"
+      inputmode="text"
+      autocomplete="off"
+      autocapitalize="off"
+      spellcheck="false"
+      placeholder="호기를 선택한 뒤 바코드를 스캔하세요"
+    />
+    <div class="scan-status" id="scanStatus">스캔 대기중</div>
+    <div class="action-row">
+      <button id="startBtn" class="action-btn start-btn" onclick="startCooking()">취반 시작</button>
+      <button id="endBtn" class="action-btn end-btn" onclick="endCooking()">취반 종료</button>
+    </div>
+  </div>
+
+  <div class="overlay" id="duplicateOverlay">
+    <div class="modal">
+      <div class="modal-title">중복 제품 확인</div>
+      <div class="modal-body" id="duplicateMessage"></div>
+      <div class="modal-btns">
+        <button class="modal-btn btn-rework" onclick="resolveDuplicate('재작업')">재작업</button>
+        <button class="modal-btn btn-additional" onclick="resolveDuplicate('추가작업')">추가작업</button>
+        <button class="modal-btn btn-cancel" onclick="resolveDuplicate('취소')">취소</button>
+      </div>
+    </div>
+  </div>
 
   <script>
-    // ===========================
-    // 본인 GAS 웹앱 URL로 교체
-    // ===========================
     const GAS_URL = "https://script.google.com/macros/s/AKfycbxiC_p6KbgQKXVKGv_Rl9wKOGQKDvpe_lnHchCAP-ksRvIX7chGPkTd3QcCYYy4_8A-/exec";
-
     const POT_COUNT = 7;
 
     const potStates = {};
     const timerIntervals = {};
+    let selectedPotNo = null;
+    let allProducts = [];
+    let duplicateResolver = null;
 
     function initPotStates() {
       for (let i = 1; i <= POT_COUNT; i++) {
         potStates[i] = {
           potLabel: `${i}번솥`,
-          status: "대기중",
+          status: "대기",
           temp: "--",
           startTime: "",
           reach90: "",
@@ -259,12 +386,21 @@
     function saveInspector() {
       const name = document.getElementById("inspectorName").value.trim();
       localStorage.setItem("ccp_inspector_name", name);
-      alert("저장되었습니다.");
+      setStatus("점검자 저장 완료");
+      focusBarcodeInput();
     }
 
     function loadInspector() {
-      const saved = localStorage.getItem("ccp_inspector_name") || "";
-      document.getElementById("inspectorName").value = saved;
+      document.getElementById("inspectorName").value = localStorage.getItem("ccp_inspector_name") || "";
+    }
+
+    function setStatus(msg) {
+      document.getElementById("scanStatus").textContent = msg || "";
+    }
+
+    function updateSelectedPotBar() {
+      const el = document.getElementById("selectedPotBar");
+      el.textContent = selectedPotNo ? `현재 선택: ${selectedPotNo}번솥` : "현재 선택: 없음";
     }
 
     function renderPots() {
@@ -273,213 +409,232 @@
 
       for (let i = 1; i <= POT_COUNT; i++) {
         const state = potStates[i];
-        const cooking = state.status === "취반중";
-
         const card = document.createElement("div");
-        card.className = `pot-card ${cooking ? "cooking" : ""}`;
-        card.id = `pot-${i}`;
+        card.className = `pot-card ${selectedPotNo === i ? "selected" : ""} ${state.status === "취반중" ? "cooking" : ""}`;
+        card.onclick = () => selectPot(i);
+
+        const productsHtml = state.products.length
+          ? state.products.map(p => `<div class="product-item">${escapeHtml(p.code)} ${escapeHtml(p.name)} [${escapeHtml(p.workType || "처음생산")}]</div>`).join("")
+          : `<div class="product-item">등록 제품 없음</div>`;
 
         card.innerHTML = `
-          <div class="pot-header">
-            <div class="pot-title">${i}번 취반기</div>
-            <div class="badge ${cooking ? "run" : "wait"}">${cooking ? "취반중" : "대기중"}</div>
+          <div class="pot-head">
+            <div class="pot-title">${i}번솥</div>
+            <div class="badge ${state.status === "취반중" ? "run" : "wait"}">${state.status === "취반중" ? "취반중" : "대기중"}</div>
           </div>
-
-          <div class="temp-box">${state.temp}<span>°C</span></div>
-          <div class="timer-box" id="timer-${i}">00:00:00</div>
-
-          <div class="info-box">
-            <div>취반시작: <span id="start-${i}">${state.startTime || "--"}</span></div>
-            <div>90°C 도달: <span id="reach-${i}">${state.reach90 || "--"}</span></div>
-            <div>CCP 경과: <span id="ccp-${i}">${getCCPElapsedText(i)}</span></div>
+          <div class="temp">${state.temp}℃</div>
+          <div class="timer" id="timer-${i}">${state.status === "취반중" ? calcElapsedText(state.timerBase) : "00:00:00"}</div>
+          <div class="mini-info">
+            취반시작: ${state.startTime || "--"}<br>
+            90°C도달: ${state.reach90 || "--"}<br>
+            작업번호: ${state.jobId || "--"}
           </div>
-
-          <div class="chips" id="chips-${i}"></div>
-
-          <div class="scan-wrap">
-            <button class="scan-btn" onclick="scanProduct(${i})">📷 바코드 스캔 / 제품 추가</button>
-            <button class="action-btn start" onclick="startCooking(${i})" ${state.products.length === 0 || cooking ? "disabled" : ""}>▶ 취반 시작</button>
-            <button class="action-btn end" onclick="endCooking(${i})" ${!cooking ? "disabled" : ""}>■ 취반 종료</button>
-            <button class="reset-btn" onclick="resetPotUIOnly(${i})">초기화</button>
-          </div>
-
-          <div class="bottom-note">${state.jobId ? "작업번호: " + state.jobId : ""}</div>
+          <div class="product-list">${productsHtml}</div>
         `;
-
         grid.appendChild(card);
-        renderPotProducts(i);
 
-        if (cooking && state.timerBase) {
+        if (state.status === "취반중" && state.timerBase) {
           startLocalTimer(i, state.timerBase);
         }
       }
+
+      updateActionButtons();
     }
 
-    function renderPotProducts(potNo) {
-      const wrap = document.getElementById(`chips-${potNo}`);
-      if (!wrap) return;
+    function updateActionButtons() {
+      const startBtn = document.getElementById("startBtn");
+      const endBtn = document.getElementById("endBtn");
 
-      wrap.innerHTML = "";
-      const items = potStates[potNo].products || [];
-
-      items.forEach((item, idx) => {
-        const chip = document.createElement("div");
-        chip.className = "chip";
-        chip.innerHTML = `
-          <span>${item.code} ${item.name} [${item.workType || "처음생산"}]</span>
-          <button type="button" onclick="removeProductFromPot(${potNo}, ${idx})">×</button>
-        `;
-        wrap.appendChild(chip);
-      });
-    }
-
-    function removeProductFromPot(potNo, idx) {
-      if (potStates[potNo].status === "취반중") return;
-      potStates[potNo].products.splice(idx, 1);
-      renderPots();
-    }
-
-    async function scanProduct(potNo) {
-      if (potStates[potNo].status === "취반중") return;
-
-      const code = prompt("제품코드(예: A01)를 입력하세요.");
-      if (!code) return;
-
-      const trimmedCode = code.trim().toUpperCase();
-
-      const products = await getProducts();
-      const found = products.find(p => String(p.barcode).trim().toUpperCase() === trimmedCode);
-
-      if (!found) {
-        alert("제품목록에서 찾을 수 없는 제품코드입니다.");
+      if (!selectedPotNo) {
+        startBtn.disabled = true;
+        endBtn.disabled = true;
         return;
       }
 
-      await addProductToPot(potNo, found);
+      const state = potStates[selectedPotNo];
+      startBtn.disabled = !(state.status !== "취반중" && state.products.length > 0);
+      endBtn.disabled = !(state.status === "취반중");
     }
 
-    async function getProducts() {
+    function selectPot(potNo) {
+      selectedPotNo = potNo;
+      updateSelectedPotBar();
+      renderPots();
+      focusBarcodeInput();
+      setStatus(`${potNo}번솥 선택됨`);
+    }
+
+    function focusBarcodeInput() {
+      setTimeout(() => {
+        const input = document.getElementById("barcodeInput");
+        if (input) input.focus();
+      }, 80);
+    }
+
+    function escapeHtml(str) {
+      return String(str || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    async function loadProducts() {
       try {
         const res = await fetch(`${GAS_URL}?action=getProducts&_=${Date.now()}`);
-        return await res.json();
+        allProducts = await res.json();
+        setStatus(`제품목록 ${allProducts.length}건 로드 완료`);
       } catch (err) {
         console.error(err);
-        alert("제품목록 조회 실패");
-        return [];
+        setStatus("제품목록 조회 실패");
       }
     }
 
-    // =========================================
-    // 핵심: 진행중/완료된 제품 둘 다 경고창 띄움
-    // =========================================
-    async function checkDuplicateProductAndAsk(code) {
-      const res = await fetch(
-        `${GAS_URL}?action=checkTodayProduct&code=${encodeURIComponent(code)}&_=${Date.now()}`
-      );
-      const data = await res.json();
-
-      console.log("중복체크 결과:", data);
-
-      if (!data || !data.exists) {
-        return {
-          duplicated: false,
-          workType: "처음생산"
-        };
-      }
-
-      let msg = "오늘 이미 생산된 제품입니다.\n\n";
-
-      if (data.source === "세션상태") {
-        msg += "현재 진행중인 작업에도 같은 제품이 있습니다.\n\n";
-      } else if (data.source === "CCP일지") {
-        msg += "오늘 완료된 이력이 있는 제품입니다.\n\n";
-      } else {
-        msg += "동일 제품 이력이 있습니다.\n\n";
-      }
-
-      if (data.rows && data.rows.length > 0) {
-        msg += data.rows.map(function(row, idx) {
-          return [
-            `[${idx + 1}]`,
-            row.작업번호 ? `작업번호: ${row.작업번호}` : "",
-            row.취반기번호 ? `취반기: ${row.취반기번호}` : "",
-            row.제품코드 ? `제품코드: ${row.제품코드}` : "",
-            row.제품명 ? `제품명: ${row.제품명}` : "",
-            row.취반시작 ? `시작: ${row.취반시작}` : "",
-            row.종료시간 ? `종료: ${row.종료시간}` : "",
-            row.작업구분 ? `작업구분: ${row.작업구분}` : ""
-          ].filter(Boolean).join(" / ");
-        }).join("\n");
-
-        msg += "\n\n";
-      }
-
-      msg += "1 입력 = 재작업\n";
-      msg += "2 입력 = 추가작업\n";
-      msg += "취소 또는 다른 값 = 등록 취소";
-
-      const answer = prompt(msg, "1");
-
-      if (answer === "1") {
-        return {
-          duplicated: true,
-          workType: "재작업"
-        };
-      }
-
-      if (answer === "2") {
-        return {
-          duplicated: true,
-          workType: "추가작업"
-        };
-      }
-
-      return {
-        duplicated: true,
-        cancelled: true
-      };
+    function findProductByCode(scanned) {
+      const code = String(scanned || "").trim().toUpperCase();
+      return allProducts.find(p => String(p.barcode || "").trim().toUpperCase() === code) || null;
     }
 
-    async function addProductToPot(potNo, product) {
-      if (!product || !product.barcode) {
-        alert("제품 정보가 없습니다.");
+    async function handleBarcodeScan(rawValue) {
+      const value = String(rawValue || "").trim().toUpperCase();
+      const input = document.getElementById("barcodeInput");
+      input.value = "";
+
+      if (!selectedPotNo) {
+        setStatus("먼저 호기를 선택하세요");
+        focusBarcodeInput();
         return;
       }
 
-      const existsInSamePot = potStates[potNo].products.some(
-        p => p.code === product.barcode
-      );
-      if (existsInSamePot) {
-        alert("이미 같은 호기에 등록된 제품입니다.");
+      if (!value) {
+        focusBarcodeInput();
         return;
       }
 
-      const checkResult = await checkDuplicateProductAndAsk(product.barcode);
-
-      if (checkResult.cancelled) {
+      const state = potStates[selectedPotNo];
+      if (state.status === "취반중") {
+        setStatus("취반중에는 제품을 추가할 수 없습니다");
+        focusBarcodeInput();
         return;
       }
 
-      const workType = checkResult.workType || "처음생산";
+      const product = findProductByCode(value);
+      if (!product) {
+        setStatus(`제품목록에 없는 코드: ${value}`);
+        focusBarcodeInput();
+        return;
+      }
 
-      potStates[potNo].products.push({
+      const alreadySamePot = state.products.some(p => p.code === value);
+      if (alreadySamePot) {
+        setStatus(`이미 ${selectedPotNo}번솥에 등록된 제품입니다`);
+        focusBarcodeInput();
+        return;
+      }
+
+      const duplicateResult = await checkDuplicateProductAndAsk(value);
+      if (duplicateResult.cancelled) {
+        setStatus(`등록 취소: ${value}`);
+        focusBarcodeInput();
+        return;
+      }
+
+      const workType = duplicateResult.workType || "처음생산";
+
+      state.products.push({
         code: product.barcode,
         name: product.name,
         workType: workType
       });
 
       renderPots();
+      setStatus(`${product.barcode} ${product.name} 등록 완료 [${workType}]`);
+      focusBarcodeInput();
     }
 
-    async function startCooking(potNo) {
-      const state = potStates[potNo];
-      if (!state || !state.products.length) {
-        alert("제품을 먼저 추가하세요.");
+    async function checkDuplicateProductAndAsk(code) {
+      try {
+        const res = await fetch(`${GAS_URL}?action=checkTodayProduct&code=${encodeURIComponent(code)}&_=${Date.now()}`);
+        const data = await res.json();
+
+        if (!data || !data.exists) {
+          return { duplicated: false, workType: "처음생산" };
+        }
+
+        let msg = "오늘 이미 생산된 제품입니다.\n\n";
+
+        if (data.source === "세션상태") {
+          msg += "현재 진행중인 작업에도 같은 제품이 있습니다.\n\n";
+        } else if (data.source === "CCP일지") {
+          msg += "오늘 완료된 이력이 있는 제품입니다.\n\n";
+        } else {
+          msg += "동일 제품 이력이 있습니다.\n\n";
+        }
+
+        if (data.rows && data.rows.length > 0) {
+          msg += data.rows.map((row, idx) => {
+            return [
+              `[${idx + 1}]`,
+              row.작업번호 ? `작업번호: ${row.작업번호}` : "",
+              row.취반기번호 ? `취반기: ${row.취반기번호}` : "",
+              row.제품코드 ? `제품코드: ${row.제품코드}` : "",
+              row.제품명 ? `제품명: ${row.제품명}` : "",
+              row.취반시작 ? `시작: ${row.취반시작}` : "",
+              row.종료시간 ? `종료: ${row.종료시간}` : "",
+              row.작업구분 ? `작업구분: ${row.작업구분}` : ""
+            ].filter(Boolean).join(" / ");
+          }).join("\n");
+        }
+
+        const selected = await openDuplicateModal(msg);
+
+        if (selected === "재작업") {
+          return { duplicated: true, workType: "재작업" };
+        }
+        if (selected === "추가작업") {
+          return { duplicated: true, workType: "추가작업" };
+        }
+        return { duplicated: true, cancelled: true };
+      } catch (err) {
+        console.error(err);
+        setStatus("중복체크 실패");
+        return { duplicated: false, workType: "처음생산" };
+      }
+    }
+
+    function openDuplicateModal(message) {
+      return new Promise(resolve => {
+        duplicateResolver = resolve;
+        document.getElementById("duplicateMessage").textContent = message;
+        document.getElementById("duplicateOverlay").classList.add("show");
+      });
+    }
+
+    function resolveDuplicate(action) {
+      document.getElementById("duplicateOverlay").classList.remove("show");
+      if (duplicateResolver) {
+        duplicateResolver(action);
+        duplicateResolver = null;
+      }
+      focusBarcodeInput();
+    }
+
+    async function startCooking() {
+      if (!selectedPotNo) {
+        setStatus("호기를 먼저 선택하세요");
         return;
       }
 
+      const state = potStates[selectedPotNo];
       if (state.status === "취반중") {
-        alert("이미 취반중입니다.");
+        setStatus("이미 취반중입니다");
+        return;
+      }
+
+      if (!state.products.length) {
+        setStatus("등록된 제품이 없습니다");
+        focusBarcodeInput();
         return;
       }
 
@@ -499,10 +654,8 @@
         const res = await fetch(url);
         const data = await res.json();
 
-        console.log("취반 시작 응답:", data);
-
         if (!data.success) {
-          alert(data.message || "취반 시작 실패");
+          setStatus(data.message || "취반 시작 실패");
           return;
         }
 
@@ -514,22 +667,27 @@
         state.temp = "--";
         state.jobId = data.jobId || "";
 
-        startLocalTimer(potNo, nowStr);
         renderPots();
+        setStatus(`${selectedPotNo}번솥 취반 시작`);
       } catch (err) {
         console.error(err);
-        alert("취반 시작 중 오류");
+        setStatus("취반 시작 중 오류");
       }
     }
 
-    async function endCooking(potNo) {
-      const state = potStates[potNo];
-      if (!state || state.status !== "취반중") {
-        alert("현재 취반중이 아닙니다.");
+    async function endCooking() {
+      if (!selectedPotNo) {
+        setStatus("호기를 먼저 선택하세요");
         return;
       }
 
-      const corrective = prompt("개선조치 내용을 입력하세요.\n적합이면 그냥 확인 눌러도 됩니다.", "") || "";
+      const state = potStates[selectedPotNo];
+      if (state.status !== "취반중") {
+        setStatus("현재 취반중이 아닙니다");
+        return;
+      }
+
+      const corrective = prompt("개선조치 내용을 입력하세요. 적합이면 비워도 됩니다.", "") || "";
 
       try {
         const url =
@@ -541,18 +699,16 @@
         const res = await fetch(url);
         const data = await res.json();
 
-        console.log("취반 종료 응답:", data);
-
         if (!data.success) {
-          alert(data.message || "취반 종료 실패");
+          setStatus(data.message || "취반 종료 실패");
           return;
         }
 
-        stopLocalTimer(potNo);
+        stopLocalTimer(selectedPotNo);
 
-        potStates[potNo] = {
-          potLabel: `${potNo}번솥`,
-          status: "대기중",
+        potStates[selectedPotNo] = {
+          potLabel: `${selectedPotNo}번솥`,
+          status: "대기",
           temp: "--",
           startTime: "",
           reach90: "",
@@ -562,40 +718,18 @@
         };
 
         renderPots();
+        setStatus(`${selectedPotNo}번솥 취반 종료 완료`);
+        focusBarcodeInput();
       } catch (err) {
         console.error(err);
-        alert("취반 종료 중 오류");
+        setStatus("취반 종료 중 오류");
       }
-    }
-
-    function resetPotUIOnly(potNo) {
-      if (potStates[potNo].status === "취반중") {
-        alert("취반중에는 초기화할 수 없습니다.");
-        return;
-      }
-
-      stopLocalTimer(potNo);
-
-      potStates[potNo] = {
-        potLabel: `${potNo}번솥`,
-        status: "대기중",
-        temp: "--",
-        startTime: "",
-        reach90: "",
-        timerBase: "",
-        products: [],
-        jobId: ""
-      };
-
-      renderPots();
     }
 
     async function refreshSessions() {
       for (let i = 1; i <= POT_COUNT; i++) {
         try {
-          const res = await fetch(
-            `${GAS_URL}?action=getSession&pot=${encodeURIComponent(i + "번솥")}&_=${Date.now()}`
-          );
+          const res = await fetch(`${GAS_URL}?action=getSession&pot=${encodeURIComponent(i + "번솥")}&_=${Date.now()}`);
           const data = await res.json();
 
           if (data && data["상태"] === "취반중") {
@@ -611,18 +745,29 @@
               .map(v => v.trim())
               .filter(Boolean);
 
-            const products = await getProducts();
             potStates[i].products = codes.map(code => {
-              const found = products.find(p => String(p.barcode).trim().toUpperCase() === code.toUpperCase());
+              const found = findProductByCode(code);
               return {
                 code: code,
                 name: found ? found.name : code,
                 workType: data["작업구분"] || "처음생산"
               };
             });
+          } else if (potStates[i].status === "취반중") {
+            stopLocalTimer(i);
+            potStates[i] = {
+              potLabel: `${i}번솥`,
+              status: "대기",
+              temp: "--",
+              startTime: "",
+              reach90: "",
+              timerBase: "",
+              products: [],
+              jobId: ""
+            };
           }
         } catch (err) {
-          console.error(`세션 조회 실패 ${i}번`, err);
+          console.error(`${i}번솥 세션 조회 실패`, err);
         }
       }
 
@@ -633,14 +778,9 @@
       stopLocalTimer(potNo);
 
       timerIntervals[potNo] = setInterval(() => {
-        const el = document.getElementById(`timer-${potNo}`);
-        if (!el) return;
-
-        el.textContent = calcElapsedText(startStr);
-
-        const ccpEl = document.getElementById(`ccp-${potNo}`);
-        if (ccpEl) {
-          ccpEl.textContent = getCCPElapsedText(potNo);
+        const timerEl = document.getElementById(`timer-${potNo}`);
+        if (timerEl) {
+          timerEl.textContent = calcElapsedText(startStr);
         }
       }, 1000);
     }
@@ -654,31 +794,20 @@
 
     function calcElapsedText(startStr) {
       if (!startStr) return "00:00:00";
-
       const start = parseKSTString(startStr);
       if (!start) return "00:00:00";
 
-      const diff = Math.max(0, Date.now() - start.getTime());
-      const totalSec = Math.floor(diff / 1000);
-
+      const diffMs = Math.max(0, Date.now() - start.getTime());
+      const totalSec = Math.floor(diffMs / 1000);
       const hh = String(Math.floor(totalSec / 3600)).padStart(2, "0");
       const mm = String(Math.floor((totalSec % 3600) / 60)).padStart(2, "0");
       const ss = String(totalSec % 60).padStart(2, "0");
-
       return `${hh}:${mm}:${ss}`;
-    }
-
-    function getCCPElapsedText(potNo) {
-      const reach90 = potStates[potNo].reach90;
-      if (!reach90 || reach90 === "-") return "--";
-
-      return calcElapsedText(reach90);
     }
 
     function parseKSTString(str) {
       if (!str || typeof str !== "string") return null;
-      const iso = str.replace(" ", "T") + "+09:00";
-      const d = new Date(iso);
+      const d = new Date(str.replace(" ", "T") + "+09:00");
       if (isNaN(d.getTime())) return null;
       return d;
     }
@@ -686,23 +815,44 @@
     function getNowKSTString() {
       const now = new Date();
       const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-
       const y = kst.getUTCFullYear();
       const m = String(kst.getUTCMonth() + 1).padStart(2, "0");
       const d = String(kst.getUTCDate()).padStart(2, "0");
       const hh = String(kst.getUTCHours()).padStart(2, "0");
       const mm = String(kst.getUTCMinutes()).padStart(2, "0");
       const ss = String(kst.getUTCSeconds()).padStart(2, "0");
-
       return `${y}-${m}-${d} ${hh}:${mm}:${ss}`;
     }
 
-    initPotStates();
-    loadInspector();
-    renderPots();
-    refreshSessions();
+    function attachBarcodeHandler() {
+      const input = document.getElementById("barcodeInput");
 
-    setInterval(refreshSessions, 10000);
+      input.addEventListener("keydown", async (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          const value = input.value;
+          await handleBarcodeScan(value);
+        }
+      });
+
+      input.addEventListener("blur", () => {
+        setTimeout(focusBarcodeInput, 120);
+      });
+    }
+
+    async function init() {
+      initPotStates();
+      loadInspector();
+      updateSelectedPotBar();
+      renderPots();
+      attachBarcodeHandler();
+      await loadProducts();
+      await refreshSessions();
+      focusBarcodeInput();
+      setInterval(refreshSessions, 10000);
+    }
+
+    init();
   </script>
 </body>
 </html>
